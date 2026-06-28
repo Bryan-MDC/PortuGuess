@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PortuGuess</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div id="app">
+
+    <!-- ===== SCREEN: HOME ===== -->
+    <div id="screen-home" class="screen active">
+      <div class="logo">
+        <div class="splash-ornament">📜</div>
+        <div class="logo-title">PortuGuess</div>
+        <div class="logo-sub">O jogo da dedução linguística</div>
+      </div>
+
+      <p class="splash-desc">
+        Descubra o impostor entre os jogadores enquanto demonstra seu conhecimento de Língua Portuguesa.
+      </p>
+
+      <div class="tags">
+        <span class="tag">Figuras de Linguagem</span>
+        <span class="tag">Formação de Palavras</span>
+        <span class="tag">6–10 jogadores</span>
+      </div>
+
+      <div style="width:100%; display:flex; flex-direction:column; gap:10px; margin-top:8px;">
+        <button class="btn btn-primary" onclick="showScreen('screen-players')">▶ Iniciar Partida</button>
+        <button class="btn btn-secondary" onclick="showScreen('screen-ranking')">📖 Ver Regras</button>
+      </div>
+    </div>
+
+    <!-- ===== SCREEN: PLAYERS ===== -->
+    <div id="screen-players" class="screen">
+      <div class="logo">
+        <div class="logo-title" style="font-size:1.8rem;">Jogadores</div>
+        <div class="logo-sub">Cadastre os participantes</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Adicionar Jogador</div>
+        <div class="input-group">
+          <input type="text" id="playerNameInput" placeholder="Nome do jogador..." maxlength="24"
+            onkeydown="if(event.key==='Enter') addPlayer()">
+          <button class="btn btn-primary btn-sm" onclick="addPlayer()">+</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>Participantes</span>
+          <span id="playerCount" class="mono" style="font-size:0.75rem; color:var(--text-dim)">0</span>
+        </div>
+        <div id="playerList" class="player-list">
+          <div class="dim italic" style="font-size:0.9rem; text-align:center; padding:12px 0;">Nenhum jogador ainda</div>
+        </div>
+        <div class="sep" style="margin:14px 0 10px;"></div>
+        <div id="countStatus" class="count-badge">
+          <span>Precisamos de 6, 8 ou 10 jogadores</span>
+          <span class="count-num count-invalid" id="countNum">0/10</span>
+        </div>
+      </div>
+
+      <div id="startGameNotice" class="notice notice-info" style="display:none;">
+        ✅ Número de jogadores válido! Clique em "Começar Partida" para continuar.
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="showScreen('screen-home')">← Voltar</button>
+        <button class="btn btn-primary" id="startGameBtn" onclick="startGame()" disabled>Começar Partida</button>
+      </div>
+    </div>
+
+    <!-- ===== SCREEN: PASSAGEM (tela intermediária entre jogadores) ===== -->
+    <div id="screen-passagem" class="screen">
+      <div class="logo">
+        <div class="logo-sub">Distribuição de Papéis</div>
+      </div>
+
+      <!-- barra de progresso -->
+      <div class="passagem-progress-track">
+        <div class="passagem-progress-bar" id="passagemBar" style="width:0%"></div>
+      </div>
+
+      <div class="card" id="passagemCard">
+        <!-- preenchido via JS -->
+      </div>
+
+      <div style="width:100%;">
+        <button class="btn btn-primary" onclick="confirmarPassagem()">
+          📱 Estou com o celular — Ver meu papel
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== SCREEN: REVEAL ===== -->
+    <div id="screen-reveal" class="screen">
+      <div class="logo">
+        <div class="logo-sub">Revelação Secreta</div>
+      </div>
+
+      <div class="notice notice-warn" id="revealNotice">
+        📵 Não mostre esta tela para os outros jogadores!
+      </div>
+
+      <div class="card" id="revealCard">
+        <!-- preenchido via JS -->
+      </div>
+
+      <div id="revealNav" style="width:100%;">
+        <!-- preenchido via JS -->
+      </div>
+    </div>
+
+    <!-- ===== SCREEN: GAME (discussão) ===== -->
+    <div id="screen-game" class="screen">
+      <div class="logo">
+        <div class="logo-title" style="font-size:1.6rem;">Discussão</div>
+      </div>
+      <div id="gameContent" style="width:100%; display:flex; flex-direction:column; gap:12px;">
+        <!-- preenchido via JS -->
+      </div>
+    </div>
+
+    <!-- ===== SCREEN: RESULT ===== -->
+    <div id="screen-result" class="screen">
+      <div id="victoryBanner" class="victory-banner"></div>
+
+      <div class="card">
+        <div class="card-title">Palavra da Rodada</div>
+        <div class="word-reveal">
+          <div id="resultWordCategory" class="word-category"></div>
+          <div id="resultWord" class="word-value"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Papéis Revelados</div>
+        <div id="resultPlayerList" class="flex-col"></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="showScreen('screen-home')">🏠 Início</button>
+      </div>
+    </div>
+
+    <!-- ===== SCREEN: REGRAS ===== -->
+    <div id="screen-ranking" class="screen">
+      <div class="logo">
+        <div class="splash-ornament">📖</div>
+        <div class="logo-title" style="font-size:1.8rem;">Regras</div>
+        <div class="logo-sub">Como jogar PortuGuess</div>
+      </div>
+
+      <!-- Conceito -->
+      <div class="card">
+        <div class="card-title">🎭 Conceito</div>
+        <p class="rules-text">No início de cada partida, todos recebem uma função secreta. Os <strong>Inocentes</strong> conhecem a palavra e devem identificar os Impostores. Os <strong>Impostores</strong> não conhecem a palavra e precisam sobreviver sem ser descobertos. Os <strong>Coringas</strong> têm objetivos especiais e buscam ser eliminados.</p>
+      </div>
+
+      <!-- Classes -->
+      <div class="card">
+        <div class="card-title">⚔️ Classes</div>
+
+        <div class="rules-role-block role-inocente-bg">
+          <div class="rules-role-header"><span class="role-badge role-inocente">🟢 Inocente</span></div>
+          <div class="rules-role-body">
+            <div class="rules-obj"><span class="rules-obj-label">🎯 Principal</span> Eliminar todos os Impostores. <em>(+1 pt)</em></div>
+            <div class="rules-obj"><span class="rules-obj-label">⭐ Extra</span> Não eliminar o Coringa durante a partida. <em>(+1 pt)</em></div>
+          </div>
+        </div>
+
+        <div class="rules-role-block role-impostor-bg" style="margin-top:10px;">
+          <div class="rules-role-header"><span class="role-badge role-impostor">🔴 Impostor</span></div>
+          <div class="rules-role-body">
+            <div class="rules-obj"><span class="rules-obj-label">🎯 Principal</span> Sobreviver até o final da partida. <em>(+1 pt)</em></div>
+            <div class="rules-obj"><span class="rules-obj-label">⭐ Extra</span> Se sobreviver, usar a palavra corretamente em uma frase. <em>(+1 pt)</em></div>
+          </div>
+        </div>
+
+        <div class="rules-role-block role-coringa-bg" style="margin-top:10px;">
+          <div class="rules-role-header"><span class="role-badge role-coringa">🟡 Coringa</span></div>
+          <div class="rules-role-body">
+            <div class="rules-obj"><span class="rules-obj-label">🎯 Principal</span> Ser eliminado pelos outros jogadores. <em>(+1 pt)</em></div>
+            <div class="rules-obj"><span class="rules-obj-label">⭐ Extra</span> Ser eliminado na primeira rodada. <em>(+1 pt)</em></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Distribuição -->
+      <div class="card">
+        <div class="card-title">👥 Distribuição por Partida</div>
+        <div class="rules-table">
+          <div class="rules-table-row rules-table-head">
+            <span>Jogadores</span><span>Inocentes</span><span>Impostores</span><span>Coringas</span>
+          </div>
+          <div class="rules-table-row">
+            <span class="mono">6</span><span>4</span><span>1</span><span>1</span>
+          </div>
+          <div class="rules-table-row">
+            <span class="mono">8</span><span>5</span><span>2</span><span>1</span>
+          </div>
+          <div class="rules-table-row">
+            <span class="mono">10</span><span>6</span><span>2</span><span>2</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sistema de Falas -->
+      <div class="card">
+        <div class="card-title">🗣️ Sistema de Falas</div>
+        <ul class="rules-list">
+          <li>Cada jogador dá uma pista sobre a palavra sorteada.</li>
+          <li>É proibido revelar a palavra diretamente.</li>
+          <li>Os Impostores devem usar as pistas para descobrir a palavra sem se trair.</li>
+          <li>Partidas com 6 ou 8 jogadores: <strong>1 ciclo</strong> de falas. Com 10: <strong>1 ciclo</strong>.</li>
+        </ul>
+      </div>
+
+      <!-- Votação -->
+      <div class="card">
+        <div class="card-title">🗳️ Votação</div>
+        <ul class="rules-list">
+          <li>Após o ciclo de falas, todos votam simultaneamente.</li>
+          <li>Não é permitido votar em si mesmo.</li>
+          <li>O voto não pode ser alterado após confirmação.</li>
+          <li>É permitido votar em <strong>Ninguém</strong>.</li>
+          <li><strong>Empate:</strong> ninguém é eliminado.</li>
+          <li><strong>Maioria para Ninguém:</strong> novo ciclo de falas.</li>
+          <li>As rodadas continuam até restar <strong>metade</strong> dos jogadores iniciais.</li>
+        </ul>
+      </div>
+
+      <!-- Vitória -->
+      <div class="card">
+        <div class="card-title">🏆 Condições de Vitória</div>
+        <div class="rules-obj" style="margin-bottom:8px;"><span class="role-badge role-inocente" style="font-size:0.6rem;">Inocentes</span> Todos os Impostores são eliminados.</div>
+        <div class="rules-obj" style="margin-bottom:8px;"><span class="role-badge role-impostor" style="font-size:0.6rem;">Impostores</span> Pelo menos um Impostor permanece vivo ao final.</div>
+        <div class="rules-obj"><span class="role-badge role-coringa" style="font-size:0.6rem;">Coringa</span> O Coringa é eliminado pelos demais participantes.</div>
+      </div>
+
+      <!-- Palavras -->
+      <div class="card">
+        <div class="card-title">📚 Temas das Palavras</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:4px;">
+          <div class="rules-theme-block">
+            <div class="rules-theme-title">Figuras de Linguagem</div>
+            <div class="rules-theme-words">Metáfora · Comparação · Hipérbole · Ironia · Eufemismo · Antítese · Personificação</div>
+          </div>
+          <div class="rules-theme-block">
+            <div class="rules-theme-title">Formação de Palavras</div>
+            <div class="rules-theme-words">Prefixação · Sufixação · Derivação · Composição · Neologismo · Hibridismo</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="width:100%; padding-bottom:8px;">
+        <button class="btn btn-ghost" onclick="showScreen('screen-home')">← Voltar ao Início</button>
+      </div>
+    </div>
+
+  </div><!-- #app -->
+  <script src="main.js"></script>
+</body>
+</html>
